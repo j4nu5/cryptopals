@@ -22,6 +22,7 @@ func CrackSingleByteXorCipher(s string) (string, error) {
 		}
 
 		pt := string(Xor(bytes, mask))
+
 		score := score(pt)
 		if score > maxScore {
 			maxScore = score
@@ -34,6 +35,7 @@ func CrackSingleByteXorCipher(s string) (string, error) {
 
 func score(s string) int {
 	score := 0
+
 	for _, ch := range []byte{'e', 't', 'a', 'o', 'i', 'n', ' ', 's', 'h', 'r', 'd', 'l', 'u'} {
 		score += frequency(s, ch)
 	}
