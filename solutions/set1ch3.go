@@ -3,6 +3,7 @@ package solutions
 import (
 	"encoding/hex"
 	"math"
+	"unicode"
 )
 
 // CrackSingleByteXorCipher cracks a cipher where a single, unique byte
@@ -21,32 +22,46 @@ func CrackSingleByteXorCipher(s string) (string, error) {
 			mask[i] = byte(val)
 		}
 
-		pt := string(Xor(bytes, mask))
+		ptBytes := Xor(bytes, mask)
+		if !IsSane(ptBytes) {
+			continue
+		}
 
-		score := score(pt)
+		score := score(ptBytes)
 		if score > maxScore {
 			maxScore = score
-			plainText = pt
+			plainText = string(ptBytes)
 		}
 	}
 
 	return plainText, nil
 }
 
-func score(s string) int {
+// IsSane returns whether the given byte array is a printable unicode string.
+func IsSane(buf []byte) bool {
+	for _, b := range buf {
+		if !unicode.IsGraphic(rune(b)) && !unicode.IsSpace(rune(b)) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func score(buf []byte) int {
 	score := 0
 
 	for _, ch := range []byte{'e', 't', 'a', 'o', 'i', 'n', ' ', 's', 'h', 'r', 'd', 'l', 'u'} {
-		score += frequency(s, ch)
+		score += frequency(buf, ch)
 	}
 
 	return score
 }
 
-func frequency(s string, b byte) int {
+func frequency(buf []byte, b byte) int {
 	f := 0
 
-	for _, ch := range []byte(s) {
+	for _, ch := range buf {
 		if toLower(ch) == b {
 			f++
 		}
