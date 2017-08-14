@@ -14,15 +14,22 @@ func CrackSingleByteXorCipher(s string) (string, error) {
 		return "", err
 	}
 
-	mask := make([]byte, len(bytes))
+	pt, _, err := CrackRepeatingXorCipherBytes(bytes)
+	return pt, err
+}
+
+// CrackRepeatingXorCipherBytes cracks cipher text bytes.
+func CrackRepeatingXorCipherBytes(ct []byte) (string, byte, error) {
+	mask := make([]byte, len(ct))
 	plainText := ""
 	maxScore := 0
+	var key byte
 	for val := 0; val <= math.MaxUint8; val++ {
 		for i := range mask {
 			mask[i] = byte(val)
 		}
 
-		ptBytes := Xor(bytes, mask)
+		ptBytes := Xor(ct, mask)
 		if !IsSane(ptBytes) {
 			continue
 		}
@@ -31,10 +38,11 @@ func CrackSingleByteXorCipher(s string) (string, error) {
 		if score > maxScore {
 			maxScore = score
 			plainText = string(ptBytes)
+			key = byte(val)
 		}
 	}
 
-	return plainText, nil
+	return plainText, key, nil
 }
 
 // IsSane returns whether the given byte array is a printable unicode string.
